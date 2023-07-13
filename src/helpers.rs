@@ -1,13 +1,15 @@
-use std::collections::HashMap;
-
 use reqwest::Response;
+use serde::Serialize;
 
 use crate::utils::HEADERS;
 
-pub async fn send_req(
+pub async fn send_req<T>(
     url: &str,
-    json: &HashMap<&str, Option<&str>>,
-) -> Result<Response, reqwest::Error> {
+    json: &T,
+) -> Result<Response, reqwest::Error>
+where
+    T: Serialize + ?Sized,
+{
     let client = reqwest::Client::new();
 
     let res = client

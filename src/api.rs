@@ -1,7 +1,6 @@
-use std::fmt::Display;
-
-use clap::ValueEnum;
 use crate::utils::{URL_V1, URL_V3};
+use clap::ValueEnum;
+use std::fmt::Display;
 
 /// API Versions for craiyon.com
 #[allow(dead_code)]

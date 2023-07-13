@@ -1,20 +1,23 @@
 use crate::{
     api::Api, 
-    utils::{URL_IMAGE, CraiyonResponse, MODEL_VER},
+    utils::{URL_IMAGE, MODEL_VER},
+    request::{CraiyonResponse, CraiyonRequest},
     helpers::send_req,
 };
+
 use clap::ValueEnum;
 use image::DynamicImage;
 use std::{
-    collections::HashMap,
     fmt::Display,
     error::Error,
 };
 
+#[derive(Default, Debug, Clone, Eq, PartialEq, PartialOrd, Ord)]
 pub struct Model<'a> {
     model: ModelType,
     version: Api,
     api_token: Option<&'a str>,
+    // TODO: Add client
 }
 
 #[allow(dead_code)]
@@ -47,12 +50,12 @@ impl<'a> Model<'a> {
     }
 
     #[allow(dead_code)]
-    pub async fn from_prompt(
+    pub async fn generate_from_prompt(
         &self,
         prompt: &str,
         num_images: usize,
     ) -> Result<Vec<DynamicImage>, Box<dyn Error>> {
-        Ok(self.generate(prompt, "", num_images).await?)
+        self.generate(prompt, "", num_images).await
     }
 
     #[allow(dead_code)]
@@ -70,22 +73,24 @@ impl<'a> Model<'a> {
         let model = &self.model.to_string();
 
         let data = match self.version {
-            Api::V1 => HashMap::from([("prompt", Some(prompt))]),
+            Api::V1 => CraiyonRequest::V1 {
+                prompt: Some(prompt),
+            },
 
-            Api::V3 => HashMap::from([
-                ("prompt", Some(prompt)),
-                ("negative_prompt", Some(negative_prompt)),
-                ("model", Some(model)),
-                ("token", self.api_token),
-                ("version", Some(MODEL_VER)),
-            ]),
+            Api::V3 => CraiyonRequest::V3 {
+                prompt: Some(prompt),
+                negative_prompt: Some(negative_prompt),
+                model: Some(model),
+                token: self.api_token,
+                version: Some(MODEL_VER),
+            },
         };
 
         let response = send_req(&self.version.to_string(), &data).await?;
 
         let res: CraiyonResponse = response.json().await?;
 
-        let image_urls: Vec<String> = res
+        let image_urls: Vec<String> = res // FIXME here are some heap allocations.
             .images
             .iter()
             .take(num_images)
@@ -105,15 +110,7 @@ impl<'a> Model<'a> {
     }
 }
 
-impl Default for Model<'_> {
-    fn default() -> Self {
-        Self {
-            model: Default::default(),
-            version: Default::default(),
-            api_token: None,
-        }
-    }
-}
+// TOOD: Add macro to overload Model::generate() and Model::generate_from_prompt().
 
 /// Variants of craiyon::Model
 #[allow(dead_code)]

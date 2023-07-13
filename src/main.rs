@@ -2,6 +2,7 @@ mod api;
 mod model;
 mod utils;
 mod helpers;
+mod request;
 
 use api::Api;
 use model::{ Model, ModelType };
@@ -11,7 +12,6 @@ use rascii_art::{charsets, RenderOptions};
 use spinoff::{spinners, Color, Spinner, Streams};
 use std::{error::Error, io};
 use unicode_segmentation::UnicodeSegmentation;
-
 #[derive(Debug, Parser)]
 #[command(author, version, about)]
 struct Args {
@@ -102,5 +102,5 @@ async fn main() -> Result<(), Box<dyn Error>> {
         )?;
         println!("\n");
     }
-    return Ok(());
+    Ok(())
 }
