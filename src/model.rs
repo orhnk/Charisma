@@ -20,11 +20,7 @@ pub struct Model<'a> {
 #[allow(dead_code)]
 impl<'a> Model<'a> {
     pub fn new() -> Self {
-        Self {
-            model: Default::default(),
-            version: Default::default(),
-            api_token: None,
-        }
+        Default::default()
     }
 
     pub fn version(mut self, ver: Api) -> Self {
@@ -67,7 +63,8 @@ impl<'a> Model<'a> {
         num_images: usize,
     ) -> Result<Vec<DynamicImage>, Box<dyn Error>> {
         if num_images > 9 {
-            panic!("Argument `num_images` has to be within the range of 0..9")
+            return Err("Number of images must be between 1 and 9".into()); // TODO: Add
+            // paralelisation for more than 9 images (max 9 images per request)
         }
 
         let model = &self.model.to_string();
@@ -110,7 +107,11 @@ impl<'a> Model<'a> {
 
 impl Default for Model<'_> {
     fn default() -> Self {
-        Self::new()
+        Self {
+            model: Default::default(),
+            version: Default::default(),
+            api_token: None,
+        }
     }
 }
 

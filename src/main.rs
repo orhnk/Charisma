@@ -86,7 +86,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .generate(&prompt, &args.negative_prompt.unwrap(), args.num_image)
         .await?;
 
-    spinner.success("\x1b[32mDone!\x1b[0m");
+    spinner.success("\x1b[32mDone!\x1b[0m"); // TODO replace it with non-magic string
 
     for image in images {
         rascii_art::render_image(
