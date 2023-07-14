@@ -1,7 +1,7 @@
 use crate::{
     api::Api, 
     utils::{URL_IMAGE, MODEL_VER},
-    request::{CraiyonResponse, CraiyonRequest},
+    request::{CraiyonResponse, CraiyonRequestV3, CraiyonRequestV1},
     helpers::send_req,
 };
 
@@ -65,19 +65,20 @@ impl<'a> Model<'a> {
         negative_prompt: &str,
         num_images: usize,
     ) -> Result<Vec<DynamicImage>, Box<dyn Error>> {
+        // FIXME add paralelisation for more than 9 images (max 9 images per request)
         if num_images > 9 {
             return Err("Number of images must be between 1 and 9".into()); // TODO: Add
             // paralelisation for more than 9 images (max 9 images per request)
         }
 
-        let model = &self.model.to_string();
+        let model = &self.model.as_str();
 
         let data = match self.version {
-            Api::V1 => CraiyonRequest::V1 {
-                prompt: Some(prompt),
-            },
+             Api::V1 => todo!(), //CraiyonRequestV1 {
+            //     prompt: Some(prompt),
+            // },
 
-            Api::V3 => CraiyonRequest::V3 {
+            Api::V3 => CraiyonRequestV3 {
                 prompt: Some(prompt),
                 negative_prompt: Some(negative_prompt),
                 model: Some(model),
@@ -121,6 +122,17 @@ pub enum ModelType {
     Photo,
     #[default]
     General,
+}
+
+impl ModelType {
+    fn as_str<'a>(&'a self) -> &'a str {
+        match self {
+            ModelType::Art => "art",
+            ModelType::Drawing => "drawing",
+            ModelType::Photo => "photo",
+            ModelType::General => "none",
+        }
+    }
 }
 
 impl Display for ModelType {
