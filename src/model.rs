@@ -1,7 +1,7 @@
 use crate::{
     api::Api, 
     utils::{URL_IMAGE, MODEL_VER},
-    request::{CraiyonResponse, CraiyonRequestV3, CraiyonRequestV1},
+    request::{CraiyonResponse, CraiyonRequestV3},
     helpers::send_req,
 };
 
