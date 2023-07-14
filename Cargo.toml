@@ -5,7 +5,7 @@ edition = "2021"
 authors = ["UTFeight"]
 description = "Generate ASCII Art using AI 🦾🧠"
 license = "MIT"
-keywords = ["ai", "artificial-intelligence", "generative-ai", "ascii-art", "cli"]
+keywords = ["ai", "generative-ai", "ascii-art", "cli", "ascii"]
 
 [dependencies]
 clap = { version = "4.3.11", features = ["derive"] }
