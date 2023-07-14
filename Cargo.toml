@@ -2,10 +2,18 @@
 name = "charisma"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = ["UTFeight"]
+description = "Generate ASCII Art using AI 🦾🧠"
+license = "MIT"
+keywords = ["ascii", "art", "image", "cli", "command-line", "tool", "ai", "artificial-intelligence", "generative-ai"]
 
 [dependencies]
 clap = { version = "4.3.11", features = ["derive"] }
+image = "0.24.6"
 rascii_art = "0.4.2"
-tokio = "1.29.1"
+reqwest = { version = "0.11.18", features = [ "blocking", "json" ] }
+serde = { version = "1.0.164", features = ["derive"] }
+spinoff = { version = "0.7.0", features = ["arc"] }
+unicode-segmentation = "1.10.1"
+tokio = { version = "1.29.1", features = ["full"] }
+lazy_static = "1.4.0"
