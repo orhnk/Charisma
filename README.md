@@ -15,3 +15,18 @@ Charisma is a commandline tool to generate ASCII Art directly from your terminal
 <br>
 
 It's available as a rust crate on [crates.io](https://crates.io/crates/charisma). For further implementation details please read [the docs](https://docs.rs/rascii_art/*/rascii_art/)
+
+<br>
+
+<h2 align="center">Showcase</h2>
+
+<details><summary> <b>More</b></summary>
+  <p align="center">
+    <img src="https://github.com/UTFeight/Charisma/assets/101834410/5916607d-92ec-4c13-a89e-731f96b41320">
+  </p>
+</details>
+
+
+<p align="center">
+  <img src="https://github.com/UTFeight/Charisma/assets/101834410/7c57dca9-c06d-4ddb-bc65-2afd4009c037">
+</p>
