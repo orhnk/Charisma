@@ -36,3 +36,23 @@ It's available as a rust crate on [crates.io](https://crates.io/crates/charisma)
 <p align="center">
   <img src="https://github.com/UTFeight/Charisma/assets/101834410/7c57dca9-c06d-4ddb-bc65-2afd4009c037">
 </p>
+
+<h2 align="center">Getting started</h2>
+
+### Prerequisites
+  - **Cargo:** This project is built and published using [cargo](https://github.com/rust-lang/cargo)
+
+### Installation
+```shell
+cargo install charisma
+```
+
+<h2 align="center">Acknowledgments</h2>
+
+<ul style="text-align: center;">
+  <li>
+  
+  [Craiyon](https://www.craiyon.com/blog): [TOU](https://www.craiyon.com/terms)
+  
+  </li>
+</ul> 
