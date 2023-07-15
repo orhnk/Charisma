@@ -22,6 +22,12 @@ It's available as a rust crate on [crates.io](https://crates.io/crates/charisma)
 
 <details><summary> <b>More</b></summary>
   <p align="center">
+    <img src="https://github.com/UTFeight/Charisma/assets/101834410/36f0e333-79a2-4cc0-9dd9-a3c1d2e23c96">
+    <br>
+    <br>
+    <img src="https://github.com/UTFeight/Charisma/assets/101834410/a01a68fb-49f1-499d-b185-f7b548dda21d">
+    <br>
+    <br>
     <img src="https://github.com/UTFeight/Charisma/assets/101834410/5916607d-92ec-4c13-a89e-731f96b41320">
   </p>
 </details>
