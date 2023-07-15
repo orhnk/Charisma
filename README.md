@@ -47,6 +47,31 @@ It's available as a rust crate on [crates.io](https://crates.io/crates/charisma)
 cargo install charisma
 ```
 
+### Usage
+
+```shell
+Generate ASCII Art using AI 🦾🧠
+
+Usage: charisma [OPTIONS] <PROMPT>
+
+Arguments:
+  <PROMPT>  Prompt to enter
+
+Options:
+  -n, --negative-prompt <NEGATIVE_PROMPT> Use AI to generate ascii art, but with a negative prompt [default: ]
+  -N, --num-image       <NUMBER>          Number of images to generate when using AI [1..9] [default: 9]
+  -m, --model-type      <MODEL_TYPE>      Model to use in generation [default: general] [possible values: art, drawing, photo, general]
+  -v                    <API_VERSION>     Model API version [default: 3] [possible values: 1, 3]
+  -a, --api-token       <TOKEN>           API token for premium users (Faster generation, No watermark)
+  -w, --width           <WIDTH>           Width of the output image. Defaults to 128 if width and height are not specified
+  -H, --height          <HEIGHT>          Height of the output image, if not specified, it will be calculated to keep the aspect ratio
+  -c, --color                             Whether to use colors in the output image
+  -i, --invert                            Inverts the weights of the characters. Useful for white backgrounds
+  -C, --charset         <CHARSET>         Characters used to render the image, from transparent to opaque. Built-in charsets: block, emoji, default, russian, slight [default: default]
+  -h, --help                              Print help
+  -V, --version                           Print version
+```
+
 <h2 align="center">Acknowledgments</h2>
 
 <ul style="text-align: center;">
