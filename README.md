@@ -49,7 +49,7 @@ cargo install charisma
 
 ### Usage
 
-```shell
+```
 Generate ASCII Art using AI 🦾🧠
 
 Usage: charisma [OPTIONS] <PROMPT>
