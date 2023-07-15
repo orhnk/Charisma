@@ -1,16 +1,13 @@
 use crate::{
-    api::Api, 
-    utils::{URL_IMAGE, MODEL_VER},
-    request::{CraiyonResponse, CraiyonRequestV3},
+    api::Api,
     helpers::send_req,
+    request::{CraiyonRequestV3, CraiyonResponse},
+    utils::{MODEL_VER, URL_IMAGE},
 };
 
 use clap::ValueEnum;
 use image::DynamicImage;
-use std::{
-    fmt::Display,
-    error::Error,
-};
+use std::{error::Error, fmt::Display};
 
 #[derive(Default, Debug, Clone, Eq, PartialEq, PartialOrd, Ord)]
 pub struct Model<'a> {
@@ -68,16 +65,17 @@ impl<'a> Model<'a> {
         // FIXME add paralelisation for more than 9 images (max 9 images per request)
         if num_images > 9 {
             return Err("Number of images must be between 1 and 9".into()); // TODO: Add
-            // paralelisation for more than 9 images (max 9 images per request)
+                                                                           // paralelisation for more than 9 images (max 9 images per request)
         }
 
         let model = &self.model.as_str();
 
         let data = match self.version {
-             Api::V1 => todo!(), //CraiyonRequestV1 {
+            Api::V1 => todo!(), // TODO convert this into a sum type and find a way to deserialize it.
+            // OR use CraiyonRequest struct and only use prompt in case V1
+            //CraiyonRequestV1 {
             //     prompt: Some(prompt),
             // },
-
             Api::V3 => CraiyonRequestV3 {
                 prompt: Some(prompt),
                 negative_prompt: Some(negative_prompt),
@@ -125,7 +123,7 @@ pub enum ModelType {
 }
 
 impl ModelType {
-    fn as_str<'a>(&'a self) -> &'a str {
+    fn as_str(&self) -> &str {
         match self {
             ModelType::Art => "art",
             ModelType::Drawing => "drawing",

@@ -3,10 +3,7 @@ use serde::Serialize;
 
 use crate::utils::HEADERS;
 
-pub async fn send_req<T>(
-    url: &str,
-    json: &T,
-) -> Result<Response, reqwest::Error>
+pub async fn send_req<T>(url: &str, json: &T) -> Result<Response, reqwest::Error>
 where
     T: Serialize + ?Sized,
 {

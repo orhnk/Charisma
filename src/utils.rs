@@ -1,5 +1,5 @@
 use lazy_static::lazy_static;
-use reqwest::header::{HeaderMap, CONTENT_TYPE, HeaderValue};
+use reqwest::header::{HeaderMap, HeaderValue, CONTENT_TYPE};
 
 lazy_static! {
     pub static ref HEADERS: HeaderMap = {

@@ -1,17 +1,18 @@
 mod api;
-mod model;
-mod utils;
 mod helpers;
+mod model;
 mod request;
+mod utils;
 
 use api::Api;
-use model::{ Model, ModelType };
+use model::{Model, ModelType};
 
 use clap::Parser;
 use rascii_art::{charsets, RenderOptions};
 use spinoff::{spinners, Color, Spinner, Streams};
 use std::{error::Error, io};
 use unicode_segmentation::UnicodeSegmentation;
+
 #[derive(Debug, Parser)]
 #[command(author, version, about)]
 struct Args {
