@@ -1,7 +1,7 @@
 use crate::{
     api::Api,
     helpers::send_req,
-    request::{CraiyonRequestV3, CraiyonResponse},
+    request::{CraiyonRequest, CraiyonResponse},
     utils::{MODEL_VER, URL_IMAGE},
 };
 
@@ -68,24 +68,25 @@ impl<'a> Model<'a> {
                                                                            // paralelisation for more than 9 images (max 9 images per request)
         }
 
-        let model = &self.model.as_str();
+        let model = self.model.as_str();
 
         let data = match self.version {
-            Api::V1 => todo!(), // TODO convert this into a sum type and find a way to deserialize it.
-            // OR use CraiyonRequest struct and only use prompt in case V1
-            //CraiyonRequestV1 {
-            //     prompt: Some(prompt),
-            // },
-            Api::V3 => CraiyonRequestV3 {
+            Api::V1 => {
+                CraiyonRequest::V1 {
+                    prompt: Some(prompt),
+                }
+            }
+
+            Api::V3 => CraiyonRequest::V3 {
                 prompt: Some(prompt),
                 negative_prompt: Some(negative_prompt),
                 model: Some(model),
-                token: self.api_token,
                 version: Some(MODEL_VER),
+                token: self.api_token,
             },
         };
 
-        let response = send_req(&self.version.to_string(), &data).await?;
+        let response = send_req(self.version.as_str(), &data).await?;
 
         let res: CraiyonResponse = response.json().await?;
 
