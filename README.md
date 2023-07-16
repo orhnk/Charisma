@@ -40,7 +40,7 @@ It's available as a rust crate on [crates.io](https://crates.io/crates/charisma)
 <h2 align="center">Getting started</h2>
 
 ### Prerequisites
-  - **Cargo:** This project is built and published using [cargo](https://github.com/rust-lang/cargo)
+  - **Cargo:** This project is built and published using [cargo](https://github.com/rust-lang/cargo) package manager
 
 ### Installation
 ```shell
@@ -48,6 +48,12 @@ cargo install charisma
 ```
 
 ### Usage
+
+```shell
+charisma "rusty crab robot" -c -C block # Estimated time ~1min
+```
+
+---------------------------------------
 
 ```
 Generate ASCII Art using AI 🦾🧠
