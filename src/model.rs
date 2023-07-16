@@ -72,9 +72,17 @@ impl<'a> Model<'a> {
 
         let data = match self.version {
             Api::V1 => {
-                CraiyonRequest::V1 {
-                    prompt: Some(prompt),
-                }
+                // Dall-e Mini V1 is not supported anymore.
+                // The breaking change is due to the fact that the API has changed on about 10th of July 2023.
+                // PR's are welcome
+
+                panic!("V1 is not supported anymore. Please use V3 instead.");
+
+                /*
+                    CraiyonRequest::V1 {
+                        prompt: Some(prompt),
+                    }
+                */
             }
 
             Api::V3 => CraiyonRequest::V3 {
