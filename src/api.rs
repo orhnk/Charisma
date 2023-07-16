@@ -14,6 +14,16 @@ pub enum Api {
     V3,
 }
 
+impl Api {
+    pub fn as_str(&self) -> &str {
+        match self {
+            Api::V1 => URL_V1,
+            // Api::V2 => f.write_str(URL_V2),
+            Api::V3 => URL_V3,
+        }
+    }
+}
+
 impl Display for Api {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::result::Result<(), ::std::fmt::Error> {
         match self {
