@@ -14,3 +14,5 @@ pub const URL_V3: &str = "https://api.craiyon.com/v3";
 pub const URL_V1: &str = "https://backend.craiyon.com/generate";
 pub const URL_IMAGE: &str = "https://img.craiyon.com";
 pub const MODEL_VER: &str = "35s5hfwn9n78gb06";
+
+pub const IMAGE_PER_REQUEST: usize = 9;

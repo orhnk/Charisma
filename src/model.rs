@@ -116,6 +116,55 @@ impl<'a> Model<'a> {
         }
         Ok(image_buf)
     }
+
+    async fn generate_api_chunks<T>(&self, data: CraiyonRequest<'_>, image_buf: &mut Vec<DynamicImage>) -> Result<(), Box<dyn Error>>
+        where
+            T: AsRef<str>
+    {
+        let response = send_req(self.version.as_str(), &data).await?;
+
+        let res: CraiyonResponse = response.json().await?;
+
+        let image_urls: Vec<String> = res // FIXME here are some heap allocations.
+            .images
+            .iter()
+            .map(|image| format!("{}/{}", URL_IMAGE, image))
+            .collect();
+
+        for image_url in image_urls {
+            let pixels = reqwest::blocking::get(image_url)?.bytes()?.to_vec();
+
+            let image = image::load_from_memory(&pixels)?;
+
+            image_buf.push(image);
+        }
+        Ok(())
+    }
+
+    async fn generate_exact<T>(&self, data: CraiyonRequest<'_>, image_buf: &mut Vec<DynamicImage>, num_images: usize) -> Result<(), Box<dyn Error>>
+        where
+            T: AsRef<str>
+    {
+        let response = send_req(self.version.as_str(), &data).await?;
+
+        let res: CraiyonResponse = response.json().await?;
+
+        let image_urls: Vec<String> = res // FIXME here are some heap allocations.
+            .images
+            .iter()
+            .take(num_images)
+            .map(|image| format!("{}/{}", URL_IMAGE, image))
+            .collect();
+
+        for image_url in image_urls {
+            let pixels = reqwest::blocking::get(image_url)?.bytes()?.to_vec();
+
+            let image = image::load_from_memory(&pixels)?;
+
+            image_buf.push(image);
+        }
+        Ok(())
+    }
 }
 
 // TOOD: Add macro to overload Model::generate() and Model::generate_from_prompt().
