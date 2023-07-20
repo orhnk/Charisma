@@ -81,7 +81,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     );
 
     let model = Model::from(args.model_type.unwrap(), args.version.unwrap())
-        .api_token(args.api_token.as_deref());
+        .api_token(args.api_token);
 
     let images = model
         .generate(&prompt, &args.negative_prompt.unwrap(), args.num_image)

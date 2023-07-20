@@ -2,23 +2,24 @@ use crate::{
     api::Api,
     helpers::send_req,
     request::{CraiyonRequest, CraiyonResponse},
-    utils::{MODEL_VER, URL_IMAGE},
+    utils::{MODEL_VER, URL_IMAGE, IMAGE_PER_REQUEST},
 };
 
 use clap::ValueEnum;
 use image::DynamicImage;
-use std::{error::Error, fmt::Display};
+use tokio::{sync::Mutex, task::JoinHandle};
+use std::{error::Error, fmt::Display, sync::Arc};
 
 #[derive(Default, Debug, Clone, Eq, PartialEq, PartialOrd, Ord)]
-pub struct Model<'a> {
+pub struct Model {
     model: ModelType,
     version: Api,
-    api_token: Option<&'a str>,
+    api_token: Option<String>,
     // TODO: Add client
 }
 
 #[allow(dead_code)]
-impl<'a> Model<'a> {
+impl Model {
     pub fn new() -> Self {
         Default::default()
     }
@@ -28,7 +29,7 @@ impl<'a> Model<'a> {
         self
     }
 
-    pub fn api_token(mut self, api_token: Option<&'a str>) -> Self {
+    pub fn api_token(mut self, api_token: Option<String>) -> Self {
         self.api_token = api_token;
         self
     }
@@ -62,13 +63,6 @@ impl<'a> Model<'a> {
         negative_prompt: &str,
         num_images: usize,
     ) -> Result<Vec<DynamicImage>, Box<dyn Error>> {
-        // FIXME add paralelisation for more than 9 images (max 9 images per request)
-        if num_images > 9 {
-            return Err("Number of images must be between 1 and 9".into()); // TODO: Add
-                                                                           // paralelisation for more than 9 images (max 9 images per request)
-        }
-
-        let model = self.model.as_str();
 
         let data = match self.version {
             Api::V1 => {
@@ -86,82 +80,103 @@ impl<'a> Model<'a> {
             }
 
             Api::V3 => CraiyonRequest::V3 {
-                prompt: Some(prompt),
-                negative_prompt: Some(negative_prompt),
-                model: Some(model),
-                version: Some(MODEL_VER),
-                token: self.api_token,
+                prompt: Some(prompt.to_string()),
+                negative_prompt: Some(negative_prompt.to_string()),
+                model: Some(self.model.to_string()),
+                version: Some(MODEL_VER.to_string()),
+                token: None, // FIXME api_tokens are not supported yet.
             },
         };
 
-        let response = send_req(self.version.as_str(), &data).await?;
+        let image_buf = Arc::new(Mutex::new(Vec::with_capacity(num_images)));
+        let _self = Arc::new(Mutex::new(self.clone()));
+        let data = Arc::new(Mutex::new(data));
 
-        let res: CraiyonResponse = response.json().await?;
+        let threads = Self::generate_concurrent(_self, data, image_buf.clone(), num_images).await?;
 
-        let image_urls: Vec<String> = res // FIXME here are some heap allocations.
-            .images
-            .iter()
-            .take(num_images)
-            .map(|image| format!("{}/{}", URL_IMAGE, image))
-            .collect();
-
-        let mut image_buf: Vec<DynamicImage> = Vec::with_capacity(image_urls.len());
-
-        for image_url in image_urls {
-            let pixels = reqwest::blocking::get(image_url)?.bytes()?.to_vec();
-
-            let image = image::load_from_memory(&pixels)?;
-
-            image_buf.push(image);
+        for thread in threads {
+            thread.await?;
         }
-        Ok(image_buf)
+
+        let image_buf = image_buf.lock().await;
+
+        Ok(image_buf.to_vec())
     }
 
-    async fn generate_api_chunks<T>(&self, data: CraiyonRequest<'_>, image_buf: &mut Vec<DynamicImage>) -> Result<(), Box<dyn Error>>
-        where
-            T: AsRef<str>
+    // this function takes a Arc Mutex Self with some data and returns a Vec<DynamicImage>
+    // This function uses tokio to generate images concurrently.
+    #[allow(dead_code)]
+    async fn generate_concurrent(_self: Arc<Mutex<Self>>, data: Arc<Mutex<CraiyonRequest>>, image_buf: Arc<Mutex<Vec<DynamicImage>>>, num_images: usize) -> Result<Vec<JoinHandle<()>>, Box<dyn Error>>
     {
-        let response = send_req(self.version.as_str(), &data).await?;
+        let epochs = num_images / IMAGE_PER_REQUEST;
+        let mut threads = vec![];
+
+        for _ in 0..epochs {
+            let _self = _self.clone(); // DELETE ALLL
+            let data = data.clone();
+            let image_buf = image_buf.clone();
+
+            threads.push(tokio::spawn(async move {
+                Self::generate_api_chunks(_self, data, image_buf).await.unwrap();
+            }));
+        }
+
+        let remainder = num_images % IMAGE_PER_REQUEST;
+
+        if remainder != 0 {
+
+            let _self = _self.clone();
+            let data = data.clone();
+            let image_buf = image_buf.clone();
+
+            threads.push(tokio::spawn(async move {
+                Self::generate_exact(_self, data, image_buf, remainder).await.unwrap();
+            }));
+        }
+
+        Ok(threads)
+    }
+
+    async fn generate_api_chunks(_self: Arc<Mutex<Self>>, data: Arc<Mutex<CraiyonRequest>>, image_buf: Arc<Mutex<Vec<DynamicImage>>>) -> Result<(), Box<dyn Error>>
+    {
+        let response = send_req(_self.lock().await.version.as_str(), &data.clone().lock().await.clone()).await?;
 
         let res: CraiyonResponse = response.json().await?;
 
-        let image_urls: Vec<String> = res // FIXME here are some heap allocations.
+        let image_urls = res // FIXME here are some heap allocations.
             .images
             .iter()
-            .map(|image| format!("{}/{}", URL_IMAGE, image))
-            .collect();
+            .map(|image| format!("{}/{}", URL_IMAGE, image));
 
         for image_url in image_urls {
-            let pixels = reqwest::blocking::get(image_url)?.bytes()?.to_vec();
+            let pixels = reqwest::blocking::get(image_url)?.bytes()?.to_vec(); // FIXME: remove
+            // this blocking call.
 
             let image = image::load_from_memory(&pixels)?;
 
-            image_buf.push(image);
+            image_buf.clone().lock().await.push(image);
         }
         Ok(())
     }
 
-    async fn generate_exact<T>(&self, data: CraiyonRequest<'_>, image_buf: &mut Vec<DynamicImage>, num_images: usize) -> Result<(), Box<dyn Error>>
-        where
-            T: AsRef<str>
+    async fn generate_exact(_self: Arc<Mutex<Self>>, data: Arc<Mutex<CraiyonRequest>>, image_buf: Arc<Mutex<Vec<DynamicImage>>>, num_images: usize) -> Result<(), Box<dyn Error>>
     {
-        let response = send_req(self.version.as_str(), &data).await?;
+        let response = send_req(_self.lock().await.version.as_str(), &data.lock().await.clone()).await?;
 
         let res: CraiyonResponse = response.json().await?;
 
-        let image_urls: Vec<String> = res // FIXME here are some heap allocations.
+        let image_urls = res // FIXME here are some heap allocations.
             .images
             .iter()
             .take(num_images)
-            .map(|image| format!("{}/{}", URL_IMAGE, image))
-            .collect();
+            .map(|image| format!("{}/{}", URL_IMAGE, image));
 
         for image_url in image_urls {
             let pixels = reqwest::blocking::get(image_url)?.bytes()?.to_vec();
 
             let image = image::load_from_memory(&pixels)?;
 
-            image_buf.push(image);
+            image_buf.lock().await.push(image);
         }
         Ok(())
     }
