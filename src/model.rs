@@ -88,36 +88,33 @@ impl Model {
             },
         };
 
-        let image_buf = Arc::new(Mutex::new(Vec::with_capacity(num_images)));
-        let _self = Arc::new(Mutex::new(self.clone()));
-        let data = Arc::new(Mutex::new(data));
+        let version = Arc::new(self.version.to_owned()); // FIXME
+        let data = Arc::new(data);
 
-        let threads = Self::generate_concurrent(_self, data, image_buf.clone(), num_images).await?;
+        let images = Self::generate_concurrent(version, data, num_images).await?;
 
-        for thread in threads {
-            thread.await?;
-        }
 
-        let image_buf = image_buf.lock().await;
-
-        Ok(image_buf.to_vec())
+        Ok(images)
     }
 
     // this function takes a Arc Mutex Self with some data and returns a Vec<DynamicImage>
     // This function uses tokio to generate images concurrently.
     #[allow(dead_code)]
-    async fn generate_concurrent(_self: Arc<Mutex<Self>>, data: Arc<Mutex<CraiyonRequest>>, image_buf: Arc<Mutex<Vec<DynamicImage>>>, num_images: usize) -> Result<Vec<JoinHandle<()>>, Box<dyn Error>>
+    async fn generate_concurrent(version: Arc<Api>, data: Arc<CraiyonRequest>, num_images: usize) -> Result<Vec<DynamicImage>, Box<dyn Error>>
     {
         let epochs = num_images / IMAGE_PER_REQUEST;
-        let mut threads = vec![];
+        let mut threads = Vec::with_capacity(epochs + 1); // +1 for the remainder
+        let image_buf = Arc::new(Mutex::new(Vec::with_capacity(num_images)));
 
         for _ in 0..epochs {
-            let _self = _self.clone(); // DELETE ALLL
             let data = data.clone();
             let image_buf = image_buf.clone();
+            let version = version.clone();
 
             threads.push(tokio::spawn(async move {
-                Self::generate_api_chunks(_self, data, image_buf).await.unwrap();
+                let images = Self::generate_api_chunks(*version, data).await.unwrap();
+                let mut image_buf = image_buf.lock().await;
+                image_buf.extend(images.lock().await.drain(..));
             }));
         }
 
@@ -125,60 +122,71 @@ impl Model {
 
         if remainder != 0 {
 
-            let _self = _self.clone();
             let data = data.clone();
             let image_buf = image_buf.clone();
+            let version = version.clone();
 
             threads.push(tokio::spawn(async move {
-                Self::generate_exact(_self, data, image_buf, remainder).await.unwrap();
+                let images = Self::generate_exact(*version, data, remainder).await.unwrap();
+                let mut image_buf = image_buf.lock().await;
+                image_buf.extend(images.lock().await.drain(..));
             }));
         }
 
-        Ok(threads)
+        for thread in threads {
+            thread.await?;
+        }
+
+        Ok(image_buf.clone().lock().await.to_vec())
     }
 
-    async fn generate_api_chunks(_self: Arc<Mutex<Self>>, data: Arc<Mutex<CraiyonRequest>>, image_buf: Arc<Mutex<Vec<DynamicImage>>>) -> Result<(), Box<dyn Error>>
+    async fn generate_api_chunks<T>(version: T, data: Arc<CraiyonRequest>) -> Result<Arc<Mutex<Vec<DynamicImage>>>, Box<dyn Error>>
+    where
+        T: AsRef<str>,
     {
-        let response = send_req(_self.lock().await.version.as_str(), &data.clone().lock().await.clone()).await?;
+        let image_buf =  Arc::new(Mutex::new(Vec::<DynamicImage>::with_capacity(IMAGE_PER_REQUEST)));
+        let response = send_req(version.as_ref(), &*data.clone()).await?; // This takes about ~1min
 
         let res: CraiyonResponse = response.json().await?;
 
-        let image_urls = res // FIXME here are some heap allocations.
+        let image_urls = res
             .images
             .iter()
-            .map(|image| format!("{}/{}", URL_IMAGE, image));
+            .map(|image| format!("{URL_IMAGE}/{image}"));
 
         for image_url in image_urls {
-            let pixels = reqwest::blocking::get(image_url)?.bytes()?.to_vec(); // FIXME: remove
-            // this blocking call.
+            let pixels = reqwest::get(image_url).await?.bytes().await?.to_vec();
 
             let image = image::load_from_memory(&pixels)?;
 
             image_buf.clone().lock().await.push(image);
         }
-        Ok(())
+
+        Ok(image_buf)
     }
 
-    async fn generate_exact(_self: Arc<Mutex<Self>>, data: Arc<Mutex<CraiyonRequest>>, image_buf: Arc<Mutex<Vec<DynamicImage>>>, num_images: usize) -> Result<(), Box<dyn Error>>
+    async fn generate_exact<T>(version: T, data: Arc<CraiyonRequest>, num_images: usize) -> Result<Arc<Mutex<Vec<DynamicImage>>>, Box<dyn Error>>
+    where
+        T: AsRef<str>,
     {
-        let response = send_req(_self.lock().await.version.as_str(), &data.lock().await.clone()).await?;
+        let image_buf =  Arc::new(Mutex::new(Vec::<DynamicImage>::with_capacity(IMAGE_PER_REQUEST)));
+        let response = send_req(version.as_ref(), &*data.clone()).await?;
 
         let res: CraiyonResponse = response.json().await?;
 
-        let image_urls = res // FIXME here are some heap allocations.
+        let image_urls = res
             .images
             .iter()
             .take(num_images)
-            .map(|image| format!("{}/{}", URL_IMAGE, image));
+            .map(|image| format!("{URL_IMAGE}/{image}"));
 
         for image_url in image_urls {
-            let pixels = reqwest::blocking::get(image_url)?.bytes()?.to_vec();
-
+            let pixels = reqwest::get(image_url).await?.bytes().await?.to_vec();
             let image = image::load_from_memory(&pixels)?;
 
             image_buf.lock().await.push(image);
         }
-        Ok(())
+        Ok(image_buf)
     }
 }
 

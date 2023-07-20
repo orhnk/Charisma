@@ -4,7 +4,7 @@ use std::fmt::Display;
 
 /// API Versions for craiyon.com
 #[allow(dead_code)]
-#[derive(Debug, Default, Clone, Eq, PartialEq, PartialOrd, Ord, ValueEnum)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, PartialOrd, Ord, ValueEnum, Copy)]
 pub enum Api {
     #[value(name = "1")]
     V1,
@@ -14,11 +14,11 @@ pub enum Api {
     V3,
 }
 
-impl Api {
-    pub fn as_str(&self) -> &str {
+impl AsRef<str> for Api {
+    fn as_ref(&self) -> &str {
         match self {
             Api::V1 => URL_V1,
-            // Api::V2 => f.write_str(URL_V2),
+            // Api::V2 => URL_V2,
             Api::V3 => URL_V3,
         }
     }

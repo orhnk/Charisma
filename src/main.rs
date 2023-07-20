@@ -80,8 +80,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
         Streams::Stderr,
     );
 
-    let model = Model::from(args.model_type.unwrap(), args.version.unwrap())
-        .api_token(args.api_token);
+    let model =
+        Model::from(args.model_type.unwrap(), args.version.unwrap()).api_token(args.api_token);
 
     let images = model
         .generate(&prompt, &args.negative_prompt.unwrap(), args.num_image)
