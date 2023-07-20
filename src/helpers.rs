@@ -12,5 +12,5 @@ where
         .json(json)
         .headers(HEADERS.clone()) // FIXME
         .send()
-        .await;
+        .await
 }
