@@ -7,7 +7,7 @@ use crate::{
 
 use clap::ValueEnum;
 use image::DynamicImage;
-use tokio::{sync::Mutex, task::JoinHandle};
+use tokio::{sync::Mutex};
 use std::{error::Error, fmt::Display, sync::Arc};
 
 #[derive(Default, Debug, Clone, Eq, PartialEq, PartialOrd, Ord)]
@@ -201,17 +201,6 @@ pub enum ModelType {
     Photo,
     #[default]
     General,
-}
-
-impl ModelType {
-    fn as_str(&self) -> &str {
-        match self {
-            ModelType::Art => "art",
-            ModelType::Drawing => "drawing",
-            ModelType::Photo => "photo",
-            ModelType::General => "none",
-        }
-    }
 }
 
 impl Display for ModelType {
