@@ -1,4 +1,4 @@
-<h1 align="center">Charisma</h2>
+<h1 align="center">Charisma</h1>
 <p align="center">
   <img src="https://img.shields.io/github/license/utfeight/charisma">
   <img src="https://img.shields.io/crates/v/charisma">
@@ -6,15 +6,24 @@
   <img src="https://img.shields.io/badge/Built%20with%20Rust-ff3a29">
 </p>
 
+
 <img align="left" alt="Retro Vintage Robot" src="https://github.com/UTFeight/Charisma/assets/101834410/07dee25d-1e1a-4b47-a030-f6b7738f1d66" width="120px"/>
 
 <br>
+
 Charisma is a commandline tool to generate ASCII Art directly from your terminal. It uses Dalle Mini (aka Craiyon) API to convert your words into reality. It's written in beloved rust with powerful tools come with it.
 
+
+It's available as a rust crate on [crates.io](https://crates.io/crates/charisma). For further implementation details please read [the docs](https://docs.rs/charisma/*/charisma/)
+
 <br>
 <br>
 
-It's available as a rust crate on [crates.io](https://crates.io/crates/charisma). For further implementation details please read [the docs](https://docs.rs/charisma/*/charisma/)
+<h3 align="center">Features</h3>
+
+- **Free**: No payment required for any feature
+- **Fast**: Algorithms parallelize in such a way that you can generate an image less than a second! (If you use [`-N 60`](#help) or more)
+- **Simple**: Homely CLI app with no bloat
 
 <br>
 
@@ -55,7 +64,7 @@ charisma "rusty crab robot" -c -C block # Estimated time ~1min
 
 ---------------------------------------
 
-```
+<pre id="help">
 Generate ASCII Art using AI 🦾🧠
 
 Usage: charisma [OPTIONS] <PROMPT>
@@ -76,7 +85,7 @@ Options:
   -C, --charset         <CHARSET>         Characters used to render the image, from transparent to opaque. Built-in charsets: block, emoji, default, russian, slight [default: default]
   -h, --help                              Print help
   -V, --version                           Print version
-```
+</pre>
 
 <h2 align="center">Acknowledgments</h2>
 
