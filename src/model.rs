@@ -130,6 +130,7 @@ impl Model {
                 let images = Self::generate_exact(*version, data, remainder)
                     .await
                     .unwrap();
+
                 let mut image_buf = image_buf.lock().await;
                 image_buf.extend(images.lock().await.drain(..));
             }));
@@ -149,12 +150,11 @@ impl Model {
     where
         T: AsRef<str>,
     {
+        let response = send_req(version.as_ref(), &*data.clone()).await?; // This takes about ~1min
+        let res: CraiyonResponse = response.json().await?;
         let image_buf = Arc::new(Mutex::new(Vec::<DynamicImage>::with_capacity(
             IMAGE_PER_REQUEST,
         )));
-        let response = send_req(version.as_ref(), &*data.clone()).await?; // This takes about ~1min
-
-        let res: CraiyonResponse = response.json().await?;
 
         let image_urls = res
             .images
@@ -163,7 +163,6 @@ impl Model {
 
         for image_url in image_urls {
             let pixels = reqwest::get(image_url).await?.bytes().await?.to_vec();
-
             let image = image::load_from_memory(&pixels)?;
 
             image_buf.clone().lock().await.push(image);
@@ -180,12 +179,11 @@ impl Model {
     where
         T: AsRef<str>,
     {
+        let response = send_req(version.as_ref(), &*data.clone()).await?;
+        let res: CraiyonResponse = response.json().await?;
         let image_buf = Arc::new(Mutex::new(Vec::<DynamicImage>::with_capacity(
             IMAGE_PER_REQUEST,
         )));
-        let response = send_req(version.as_ref(), &*data.clone()).await?;
-
-        let res: CraiyonResponse = response.json().await?;
 
         let image_urls = res
             .images
@@ -199,6 +197,7 @@ impl Model {
 
             image_buf.lock().await.push(image);
         }
+
         Ok(image_buf)
     }
 }
