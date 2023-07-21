@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-/// Request Serializer for api V1
+/// Request Serializer
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(untagged)]
 pub enum CraiyonRequest {
@@ -17,7 +17,7 @@ pub enum CraiyonRequest {
     },
 }
 
-/// Response Deserializer
+/// Response Serializer
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CraiyonResponse {
     pub images: Vec<String>,

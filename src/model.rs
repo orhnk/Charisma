@@ -15,7 +15,6 @@ pub struct Model {
     model: ModelType,
     version: Api,
     api_token: Option<String>,
-    // TODO: Add client
 }
 
 #[allow(dead_code)]
@@ -64,20 +63,21 @@ impl Model {
         num_images: usize,
     ) -> Result<Vec<DynamicImage>, Box<dyn Error>> {
 
-        let version = Arc::new(self.version.to_owned()); // FIXME
-        let data = self.version.to_response(
-            prompt.to_string(),
-            negative_prompt.to_string(),
-            self.model.to_string(),
-        ).into();
+       let images = {
 
-        let images = Self::generate_concurrent(version, data, num_images).await?;
+            let version = Arc::new(self.version.to_owned()); // FIXME
+            let data = self.version.to_response(
+                prompt.to_string(),
+                negative_prompt.to_string(),
+                self.model.to_string(),
+            ).into();
+
+            Self::generate_concurrent(version, data, num_images).await?
+        };
 
         Ok(images)
     }
 
-    // this function takes a Arc Mutex Self with some data and returns a Vec<DynamicImage>
-    // This function uses tokio to generate images concurrently.
     #[allow(dead_code)]
     async fn generate_concurrent(
         version: Arc<Api>,
@@ -86,7 +86,7 @@ impl Model {
     ) -> Result<Vec<DynamicImage>, Box<dyn Error>> {
 
         let epochs = num_images / IMAGE_PER_REQUEST;
-        let mut threads = Vec::with_capacity(epochs + 1); // +1 for the remainder
+        let mut threads = Vec::with_capacity(epochs + 1); // +1 possible remainder thread
         let image_buf = Arc::new(Mutex::new(Vec::with_capacity(num_images)));
 
         for _ in 0..epochs {
@@ -183,8 +183,6 @@ impl Model {
         Ok(image_buf)
     }
 }
-
-// TOOD: Add macro to overload Model::generate() and Model::generate_from_prompt().
 
 /// Variants of craiyon::Model
 #[allow(dead_code)]

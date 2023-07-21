@@ -5,7 +5,7 @@ use crate::{
 use clap::ValueEnum;
 use std::fmt::Display;
 
-/// API Versions for craiyon.com
+/// Dall-e Mini API Versions
 #[allow(dead_code)]
 #[derive(Debug, Default, Clone, Eq, PartialEq, PartialOrd, Ord, ValueEnum, Copy)]
 pub enum Api {

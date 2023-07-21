@@ -64,6 +64,7 @@ struct Args {
 async fn main() -> Result<(), Box<dyn Error>> {
     let mut args = Args::parse();
 
+    // Unicode segmentation is used to split the string into graphemes
     let clusters = UnicodeSegmentation::graphemes(args.charset.as_str(), true).collect::<Vec<_>>();
     let charset = charsets::from_str(args.charset.as_str()).unwrap_or(&clusters);
 
@@ -72,7 +73,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }
 
     let prompt = args.prompt;
-
     let spinner = Spinner::new_with_stream(
         spinners::Arc,
         prompt.to_string(),
@@ -80,8 +80,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         Streams::Stderr,
     );
 
-    let model =
-        Model::from(args.model_type.unwrap(), args.version.unwrap()).api_token(args.api_token);
+    let model = Model::from(args.model_type.unwrap(), args.version.unwrap()).api_token(args.api_token);
 
     let images = model
         .generate(&prompt, &args.negative_prompt.unwrap(), args.num_image)
