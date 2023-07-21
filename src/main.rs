@@ -19,11 +19,11 @@ struct Args {
     ///Prompt to enter
     prompt: String,
 
-    /// Use AI to generate ascii art, but with a negative prompt
+    /// Things to avoid in the generated image
     #[arg(short, long, default_value = "")]
     negative_prompt: Option<String>,
 
-    /// Number of images to generate when using AI [1..9]
+    /// Number of images to generate when using AI
     #[arg(short = 'N', long, value_name = "NUMBER", default_value = "9")]
     num_image: usize,
 
@@ -55,7 +55,7 @@ struct Args {
     #[arg(short, long)]
     invert: bool,
 
-    /// Characters used to render the image, from transparent to opaque. Built-in charsets: block, emoji, default, russian, slight
+    /// Characters used to render the image Built-in charsets: [block, emoji, default, russian, slight]
     #[arg(short = 'C', long, default_value = "default")]
     charset: String,
 }
