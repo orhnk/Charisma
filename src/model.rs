@@ -2,7 +2,7 @@ use crate::{
     api::Api,
     helpers::send_req,
     request::{CraiyonRequest, CraiyonResponse},
-    utils::{IMAGE_PER_REQUEST, MODEL_VER, URL_IMAGE},
+    utils::{IMAGE_PER_REQUEST, URL_IMAGE},
 };
 
 use clap::ValueEnum;
@@ -63,32 +63,13 @@ impl Model {
         negative_prompt: &str,
         num_images: usize,
     ) -> Result<Vec<DynamicImage>, Box<dyn Error>> {
-        let data = match self.version {
-            Api::V1 => {
-                // Dall-e Mini V1 is not supported anymore.
-                // The breaking change is due to the fact that the API has changed on about 10th of July 2023.
-                // PR's are welcome
-
-                panic!("V1 is not supported anymore. Please use V3 instead.");
-
-                /*
-                    CraiyonRequest::V1 {
-                        prompt: Some(prompt),
-                    }
-                */
-            }
-
-            Api::V3 => CraiyonRequest::V3 {
-                prompt: Some(prompt.to_string()),
-                negative_prompt: Some(negative_prompt.to_string()),
-                model: Some(self.model.to_string()),
-                version: Some(MODEL_VER.to_string()),
-                token: None, // FIXME api_tokens are not supported yet.
-            },
-        };
 
         let version = Arc::new(self.version.to_owned()); // FIXME
-        let data = Arc::new(data);
+        let data = self.version.to_response(
+            prompt.to_string(),
+            negative_prompt.to_string(),
+            self.model.to_string(),
+        ).into();
 
         let images = Self::generate_concurrent(version, data, num_images).await?;
 
@@ -103,6 +84,7 @@ impl Model {
         data: Arc<CraiyonRequest>,
         num_images: usize,
     ) -> Result<Vec<DynamicImage>, Box<dyn Error>> {
+
         let epochs = num_images / IMAGE_PER_REQUEST;
         let mut threads = Vec::with_capacity(epochs + 1); // +1 for the remainder
         let image_buf = Arc::new(Mutex::new(Vec::with_capacity(num_images)));
@@ -113,7 +95,7 @@ impl Model {
             let version = version.clone();
 
             threads.push(tokio::spawn(async move {
-                let images = Self::generate_api_chunks(*version, data).await.unwrap();
+                let images = Self::generate_api_chunk(*version, data).await.unwrap();
                 let mut image_buf = image_buf.lock().await;
                 image_buf.extend(images.lock().await.drain(..));
             }));
@@ -143,7 +125,7 @@ impl Model {
         Ok(image_buf.clone().lock().await.to_vec())
     }
 
-    async fn generate_api_chunks<T>(
+    async fn generate_api_chunk<T>(
         version: T,
         data: Arc<CraiyonRequest>,
     ) -> Result<Arc<Mutex<Vec<DynamicImage>>>, Box<dyn Error>>
