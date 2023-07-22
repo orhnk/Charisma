@@ -21,7 +21,8 @@ struct Args {
 
     /// Things to avoid in the generated image
     #[arg(short, long, default_value = "")]
-    negative_prompt: Option<String>,
+    // HACK: API didn't like None as a prompt, so we use an empty string instead
+    negative_prompt: String,
 
     /// Number of images to generate when using AI
     #[arg(short = 'N', long, value_name = "NUMBER", default_value = "9")]
@@ -83,7 +84,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let model = Model::from(args.model_type.unwrap(), args.version.unwrap()).api_token(args.api_token);
 
     let images = model
-        .generate(&prompt, &args.negative_prompt.unwrap(), args.num_image)
+        .generate(&prompt, &args.negative_prompt, args.num_image)
         .await?;
 
     spinner.success("\x1b[32mDone!\x1b[0m"); // TODO replace it with non-magic string
