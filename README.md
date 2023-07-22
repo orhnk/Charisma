@@ -11,7 +11,7 @@
 
 <br>
 
-Charisma is a commandline tool to generate ASCII Art directly from your terminal. It uses Dalle Mini (aka Craiyon) API to convert your words into reality. It's written in beloved rust with powerful tools come with it.
+Charisma serves a purpose of being a bridge between Dall-e mini. It's used to generate ASCII Art directly from your terminal. It uses Craiyon API to convert your words into reality. It's written in beloved rust with powerful tools come with it.
 
 
 It's available as a rust crate on [crates.io](https://crates.io/crates/charisma). For further implementation details please read [the docs](https://docs.rs/charisma/*/charisma/)
