@@ -1,6 +1,6 @@
 [package]
 name = "charisma"
-version = "0.2.0"
+version = "0.2.6"
 edition = "2021"
 authors = ["UTFeight"]
 description = "Generate ASCII Art using AI 🦾🧠"
