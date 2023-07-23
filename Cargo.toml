@@ -6,6 +6,7 @@ authors = ["UTFeight"]
 description = "Generate ASCII Art using AI 🦾🧠"
 license = "MIT"
 keywords = ["ai", "generative-ai", "ascii-art", "cli", "art"]
+repository = "https://github.com/UTFeight/Charisma/"
 
 [dependencies]
 clap = { version = "4.3.11", features = ["derive"] }
